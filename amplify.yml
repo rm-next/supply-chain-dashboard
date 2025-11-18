@@ -16,10 +16,11 @@ frontend:
     paths:
       - node_modules/**/*
       - .next/cache/**/*
-  customHeaders:
-    - pattern: '**/*'
-      headers:
-        - key: 'X-Frame-Options'
-          value: 'DENY'
-        - key: 'X-Content-Type-Options'
-          value: 'nosniff'
+backend:
+  phases:
+    build:
+      commands:
+        - echo "SSR build complete"
+compute:
+  type: 'ssr'
+  runtime: 'nodejs18.x'

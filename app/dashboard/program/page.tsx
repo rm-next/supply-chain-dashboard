@@ -17,7 +17,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, VisuallyHidden } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -1655,6 +1655,9 @@ export default function ProgramPage() {
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="!max-w-[95vw] w-[95vw] h-[95vh] !max-h-[95vh] p-0 gap-0 flex flex-col">
+          <VisuallyHidden>
+            <DialogTitle>Program Details</DialogTitle>
+          </VisuallyHidden>
           {selectedProgram && (
             <div className="flex flex-col h-full w-full">
               <div className="border-b px-6 py-4">
