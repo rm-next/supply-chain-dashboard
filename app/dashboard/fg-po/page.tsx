@@ -1,4 +1,5 @@
 "use client"
+import { safeLocalStorage } from "@/lib/localStorage"
 
 import { useMemo, useState } from "react"
 import {
@@ -199,7 +200,7 @@ Component shipment delays from upstream suppliers are impacting the production s
     ]
 
     if (typeof window !== 'undefined') {
-      localStorage.setItem("assistantCollaboration", JSON.stringify({
+      safeLocalStorage.setItem("assistantCollaboration", JSON.stringify({
         message: delayExplanation,
         participants: [],
         type: "delay-explanation",

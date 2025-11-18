@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useRole } from "@/hooks/use-role"
 import { AlertCircle, CheckCircle2, Clock, Check, Pencil, HelpCircle, Bot, User, Database, GitBranch } from 'lucide-react'
 import { useEffect, useState, useRef } from "react"
+import { safeLocalStorage } from "@/lib/localStorage"
 import {
   Dialog,
   DialogContent,
@@ -895,13 +896,13 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
   useEffect(() => {
     const loadApprovedActions = () => {
       if (typeof window === 'undefined') return
-      const approved = JSON.parse(localStorage.getItem("approvedActions") || "[]")
+      const approved = JSON.parse(safeLocalStorage.getItem("approvedActions") || "[]")
       setApprovedActionIds(new Set(approved))
     }
 
     const loadQuoteRequests = () => {
       if (typeof window === 'undefined') return
-      const requests = JSON.parse(localStorage.getItem("quoteRequests") || "[]")
+      const requests = JSON.parse(safeLocalStorage.getItem("quoteRequests") || "[]")
       const uniqueRequests = Array.from(
         new Map(requests.map((req: any) => [`${req.supplier}-${req.partNumber}-${req.description}`, req])).values(),
       )
@@ -910,15 +911,15 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
 
     const loadNotesAndStatuses = () => {
       if (typeof window === 'undefined') return
-      const notes = JSON.parse(localStorage.getItem("actionNotes") || "{}")
-      const statuses = JSON.parse(localStorage.getItem("actionStatuses") || "{}")
+      const notes = JSON.parse(safeLocalStorage.getItem("actionNotes") || "{}")
+      const statuses = JSON.parse(safeLocalStorage.getItem("actionStatuses") || "{}")
       setActionNotes(notes)
       setActionStatuses(statuses)
     }
 
     const loadProgramActions = () => {
       if (typeof window === 'undefined') return
-      const programs = JSON.parse(localStorage.getItem("programActions") || "[]")
+      const programs = JSON.parse(safeLocalStorage.getItem("programActions") || "[]")
       setProgramActions(programs)
     }
 
@@ -1057,7 +1058,7 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
     const status = getEffectiveStatus(a)
     return status === "approved"
   }).sort((a, b) => { // Sort approved items by timestamp (most recent first)
-    const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+    const approvedTimestamps = JSON.parse(safeLocalStorage.getItem("approvedTimestamps") || "{}")
     const timeA = approvedTimestamps[a.id] ? new Date(approvedTimestamps[a.id]).getTime() : 0
     const timeB = approvedTimestamps[b.id] ? new Date(approvedTimestamps[b.id]).getTime() : 0
     return timeB - timeA // Most recent first
@@ -1075,16 +1076,16 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
     setApprovedActionIds(newApprovedIds)
 
     const timestamp = new Date().toISOString()
-    const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+    const approvedTimestamps = JSON.parse(safeLocalStorage.getItem("approvedTimestamps") || "{}")
     approvedTimestamps[actionId] = timestamp
-    localStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
+    safeLocalStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
 
-    localStorage.setItem("approvedActions", JSON.stringify(Array.from(newApprovedIds)))
+    safeLocalStorage.setItem("approvedActions", JSON.stringify(Array.from(newApprovedIds)))
 
     const quoteRequest = quoteRequests.find((req) => req.id === actionId)
     if (quoteRequest) {
       const updatedRequests = quoteRequests.map((req) => (req.id === actionId ? { ...req, status: "Approved" } : req))
-      localStorage.setItem("quoteRequests", JSON.stringify(updatedRequests))
+      safeLocalStorage.setItem("quoteRequests", JSON.stringify(updatedRequests))
       setQuoteRequests(updatedRequests)
     }
   }
@@ -1093,7 +1094,7 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
     const quoteRequest = quoteRequests.find((req) => req.id === actionId)
     if (quoteRequest) {
       const updatedRequests = quoteRequests.filter((req) => req.id !== actionId)
-      localStorage.setItem("quoteRequests", JSON.JSON.stringify(updatedRequests))
+      safeLocalStorage.setItem("quoteRequests", JSON.JSON.stringify(updatedRequests))
       setQuoteRequests(updatedRequests)
     }
   }
@@ -1109,17 +1110,17 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
 
     const newStatuses = { ...actionStatuses, [editingAction.id]: editStatus }
     setActionStatuses(newStatuses)
-    localStorage.setItem("actionStatuses", JSON.stringify(newStatuses))
+    safeLocalStorage.setItem("actionStatuses", JSON.stringify(newStatuses))
 
     const newNotes = { ...actionNotes, [editingAction.id]: editNotes }
     setActionNotes(newNotes)
-    localStorage.setItem("actionNotes", JSON.stringify(newNotes))
+    safeLocalStorage.setItem("actionNotes", JSON.stringify(newNotes))
 
     if (editStatus === "approved" && !approvedActionIds.has(editingAction.id)) {
       const newApprovedIds = new Set(approvedActionIds)
       newApprovedIds.add(editingAction.id)
       setApprovedActionIds(newApprovedIds)
-      localStorage.setItem("approvedActions", JSON.JSON.stringify(Array.from(newApprovedIds)))
+      safeLocalStorage.setItem("approvedActions", JSON.JSON.stringify(Array.from(newApprovedIds)))
     }
 
     setEditingAction(null)
@@ -1136,7 +1137,7 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
     showActions = false,
     showEdit = false,
   }: { action: Action; showActions?: boolean; showEdit?: boolean }) => {
-    const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+    const approvedTimestamps = JSON.parse(safeLocalStorage.getItem("approvedTimestamps") || "{}")
     const approvedTimestamp = approvedTimestamps[action.id]
     const displayTimestamp = approvedTimestamp || action.timestamp
     const timestampLabel = approvedTimestamp ? "Approved" : "Created"

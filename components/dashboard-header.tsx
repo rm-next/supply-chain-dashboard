@@ -1,6 +1,7 @@
 "use client"
 import { ChevronDown, User, LogOut, Package, Sparkles, X, Send, Bot, RotateCcw, Plus, CheckCircle2, Clock, Users, AlertCircle, Check, UploadCloud } from 'lucide-react'
 import { useState, useRef, useEffect } from "react"
+import { safeLocalStorage } from "@/lib/localStorage"
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -100,7 +101,7 @@ export function DashboardHeader({ moduleName }: DashboardHeaderProps) {
       const { message, qualityAnalysis, shipmentAnalysis, costAnalysis, shouldCostData, toolingCostData } = event.detail
       
       // Save to localStorage so it can be picked up when chat opens
-      localStorage.setItem("assistantCollaboration", JSON.stringify({
+      safeLocalStorage.setItem("assistantCollaboration", JSON.stringify({
         message,
         type: event.detail.type || "quality-explanation",
         qualityAnalysis,
@@ -382,7 +383,7 @@ function AssistantChat({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const saved = localStorage.getItem("customShortcuts")
+    const saved = safeLocalStorage.getItem("customShortcuts")
     if (saved) {
       setCustomShortcuts(JSON.parse(saved))
     }
@@ -394,7 +395,7 @@ function AssistantChat({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
   useEffect(() => {
     if (isOpen && typeof window !== 'undefined') {
-      const collabData = localStorage.getItem("assistantCollaboration")
+      const collabData = safeLocalStorage.getItem("assistantCollaboration")
       if (collabData) {
         console.log("[v0] Collaboration data found:", collabData)
         const { message, participants: collabParticipants, type, resolutionOptions, poNumber, productName, asinNumber, qualityAnalysis, shipmentAnalysis, costAnalysis, shouldCostData, toolingCostData } = JSON.parse(collabData)
@@ -583,7 +584,7 @@ ${shouldCostData.conclusion}`
         
         setParticipants(collabParticipants || [])
         
-        localStorage.removeItem("assistantCollaboration")
+        safeLocalStorage.removeItem("assistantCollaboration")
       }
     }
   }, [isOpen])
@@ -639,7 +640,7 @@ ${shouldCostData.conclusion}`
 
     const updated = [...customShortcuts, newShortcut]
     setCustomShortcuts(updated)
-    localStorage.setItem("customShortcuts", JSON.stringify(updated))
+    safeLocalStorage.setItem("customShortcuts", JSON.stringify(updated))
 
     setNewShortcutName("")
     setNewShortcutPrompt("")
@@ -811,18 +812,18 @@ ${shouldCostData.conclusion}`
               timestamp: new Date().toISOString()
             }
             
-            const existingApproved = JSON.parse(localStorage.getItem("approvedActions") || "[]")
-            localStorage.setItem("approvedActions", JSON.stringify([...existingApproved, delayResolutionAction.id]))
+            const existingApproved = JSON.parse(safeLocalStorage.getItem("approvedActions") || "[]")
+            safeLocalStorage.setItem("approvedActions", JSON.stringify([...existingApproved, delayResolutionAction.id]))
             
-            const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+            const approvedTimestamps = JSON.parse(safeLocalStorage.getItem("approvedTimestamps") || "{}")
             approvedTimestamps[delayResolutionAction.id] = new Date().toISOString()
-            localStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
+            safeLocalStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
             
-            const existingStatuses = JSON.parse(localStorage.getItem("actionStatuses") || "{}")
-            localStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [delayResolutionAction.id]: "approved" }))
+            const existingStatuses = JSON.parse(safeLocalStorage.getItem("actionStatuses") || "{}")
+            safeLocalStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [delayResolutionAction.id]: "approved" }))
             
-            const existingPrograms = JSON.parse(localStorage.getItem("programActions") || "[]")
-            localStorage.setItem("programActions", JSON.stringify([...existingPrograms, delayResolutionAction]))
+            const existingPrograms = JSON.parse(safeLocalStorage.getItem("programActions") || "[]")
+            safeLocalStorage.setItem("programActions", JSON.stringify([...existingPrograms, delayResolutionAction]))
             
             window.dispatchEvent(new Event("storage"))
           }, 2000)
@@ -879,18 +880,18 @@ ${shouldCostData.conclusion}`
             }
             
             // Save to localStorage
-            const existingApproved = JSON.parse(localStorage.getItem("approvedActions") || "[]")
-            localStorage.setItem("approvedActions", JSON.stringify([...existingApproved, capacityAction.id]))
+            const existingApproved = JSON.parse(safeLocalStorage.getItem("approvedActions") || "[]")
+            safeLocalStorage.setItem("approvedActions", JSON.stringify([...existingApproved, capacityAction.id]))
             
-            const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+            const approvedTimestamps = JSON.parse(safeLocalStorage.getItem("approvedTimestamps") || "{}")
             approvedTimestamps[capacityAction.id] = new Date().toISOString()
-            localStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
+            safeLocalStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
             
-            const existingStatuses = JSON.parse(localStorage.getItem("actionStatuses") || "{}")
-            localStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [capacityAction.id]: "approved" }))
+            const existingStatuses = JSON.parse(safeLocalStorage.getItem("actionStatuses") || "{}")
+            safeLocalStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [capacityAction.id]: "approved" }))
             
-            const existingPrograms = JSON.parse(localStorage.getItem("programActions") || "[]")
-            localStorage.setItem("programActions", JSON.stringify([...existingPrograms, capacityAction]))
+            const existingPrograms = JSON.parse(safeLocalStorage.getItem("programActions") || "[]")
+            safeLocalStorage.setItem("programActions", JSON.stringify([...existingPrograms, capacityAction]))
             
             // Trigger storage event to update UI
             window.dispatchEvent(new Event("storage"))
@@ -948,21 +949,21 @@ ${shouldCostData.conclusion}`
       }
     }
 
-    const existingApproved = JSON.parse(localStorage.getItem("approvedActions") || "[]")
-    localStorage.setItem("approvedActions", JSON.stringify([...existingApproved, programAction.id]))
+    const existingApproved = JSON.parse(safeLocalStorage.getItem("approvedActions") || "[]")
+    safeLocalStorage.setItem("approvedActions", JSON.stringify([...existingApproved, programAction.id]))
 
-    const existingStatuses = JSON.parse(localStorage.getItem("actionStatuses") || "{}")
-    localStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [programAction.id]: "approved" }))
+    const existingStatuses = JSON.parse(safeLocalStorage.getItem("actionStatuses") || "{}")
+    safeLocalStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [programAction.id]: "approved" }))
 
     try {
-      const existingPrograms = JSON.parse(localStorage.getItem("programActions") || "[]")
+      const existingPrograms = JSON.parse(safeLocalStorage.getItem("programActions") || "[]")
       // Keep only the last 50 items to prevent quota issues
       const limitedPrograms = existingPrograms.slice(-49)
-      localStorage.setItem("programActions", JSON.stringify([...limitedPrograms, programAction]))
+      safeLocalStorage.setItem("programActions", JSON.stringify([...limitedPrograms, programAction]))
     } catch (error) {
       console.warn("Failed to save to localStorage, clearing old data:", error)
       // If still failing, keep only the new item
-      localStorage.setItem("programActions", JSON.stringify([programAction]))
+      safeLocalStorage.setItem("programActions", JSON.stringify([programAction]))
     }
 
     onClose()
@@ -1237,18 +1238,18 @@ ${shouldCostData.conclusion}`
                             timestamp: new Date().toISOString()
                           }
                           
-                          const existingApproved = JSON.parse(localStorage.getItem("approvedActions") || "[]")
-                          localStorage.setItem("approvedActions", JSON.stringify([...existingApproved, costAction.id]))
+                          const existingApproved = JSON.parse(safeLocalStorage.getItem("approvedActions") || "[]")
+                          safeLocalStorage.setItem("approvedActions", JSON.stringify([...existingApproved, costAction.id]))
                           
-                          const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+                          const approvedTimestamps = JSON.parse(safeLocalStorage.getItem("approvedTimestamps") || "{}")
                           approvedTimestamps[costAction.id] = new Date().toISOString()
-                          localStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
+                          safeLocalStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
                           
-                          const existingStatuses = JSON.parse(localStorage.getItem("actionStatuses") || "{}")
-                          localStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [costAction.id]: "approved" }))
+                          const existingStatuses = JSON.parse(safeLocalStorage.getItem("actionStatuses") || "{}")
+                          safeLocalStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [costAction.id]: "approved" }))
                           
-                          const existingPrograms = JSON.parse(localStorage.getItem("programActions") || "[]")
-                          localStorage.setItem("programActions", JSON.stringify([...existingPrograms, costAction]))
+                          const existingPrograms = JSON.parse(safeLocalStorage.getItem("programActions") || "[]")
+                          safeLocalStorage.setItem("programActions", JSON.stringify([...existingPrograms, costAction]))
                           
                           window.dispatchEvent(new Event("storage"))
                           
@@ -1640,18 +1641,18 @@ ${shouldCostData.conclusion}`
                                   timestamp: new Date().toISOString()
                                 }
                                 
-                                const existingApproved = JSON.parse(localStorage.getItem("approvedActions") || "[]")
-                                localStorage.setItem("approvedActions", JSON.stringify([...existingApproved, shipmentAction.id]))
+                                const existingApproved = JSON.parse(safeLocalStorage.getItem("approvedActions") || "[]")
+                                safeLocalStorage.setItem("approvedActions", JSON.stringify([...existingApproved, shipmentAction.id]))
                                 
-                                const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+                                const approvedTimestamps = JSON.parse(safeLocalStorage.getItem("approvedTimestamps") || "{}")
                                 approvedTimestamps[shipmentAction.id] = new Date().toISOString()
-                                localStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
+                                safeLocalStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
                                 
-                                const existingStatuses = JSON.parse(localStorage.getItem("actionStatuses") || "{}")
-                                localStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [shipmentAction.id]: "approved" }))
+                                const existingStatuses = JSON.parse(safeLocalStorage.getItem("actionStatuses") || "{}")
+                                safeLocalStorage.setItem("actionStatuses", JSON.stringify({ ...existingStatuses, [shipmentAction.id]: "approved" }))
                                 
-                                const existingPrograms = JSON.parse(localStorage.getItem("programActions") || "[]")
-                                localStorage.setItem("programActions", JSON.stringify([...existingPrograms, shipmentAction]))
+                                const existingPrograms = JSON.parse(safeLocalStorage.getItem("programActions") || "[]")
+                                safeLocalStorage.setItem("programActions", JSON.stringify([...existingPrograms, shipmentAction]))
                                 
                                 window.dispatchEvent(new Event("storage"))
                                 

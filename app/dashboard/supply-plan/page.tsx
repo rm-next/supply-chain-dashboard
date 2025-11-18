@@ -1,4 +1,5 @@
 "use client"
+import { safeLocalStorage } from "@/lib/localStorage"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
@@ -129,7 +130,7 @@ export default function SupplyPlanPage() {
     const message = `Capacity shortfall detected for ${month}: Demand is ${monthData.demand.toLocaleString()} units but capacity is only ${monthData.capacity.toLocaleString()} units. We need ${shortfall.toLocaleString()} additional units. Can you help increase production capacity?`
     
     if (typeof window !== 'undefined') {
-      localStorage.setItem("assistantCollaboration", JSON.stringify({
+      safeLocalStorage.setItem("assistantCollaboration", JSON.stringify({
         message,
         participants: ["Foxconn - EMS Partner"],
         timestamp: Date.now()
@@ -147,7 +148,7 @@ export default function SupplyPlanPage() {
     const explanation = `I've analyzed the capacity shortage for ${month}:\n\n**Why the shortage exists:**\n• Demand forecast: ${monthData.demand.toLocaleString()} units\n• Current capacity: ${monthData.capacity.toLocaleString()} units\n• Shortfall: ${shortfall.toLocaleString()} units (${Math.round((shortfall/monthData.demand)*100)}%)\n\n**Contributing factors:**\n• Increased market demand for Q2 product launches\n• Limited manufacturing line capacity at current EMS partners\n• Lead time constraints for capacity expansion\n• Seasonal demand spike typical for this period\n\n**Recommendation:**\nI recommend collaborating with your Contract Manufacturer to explore capacity expansion options or alternative production lines.`
     
     if (typeof window !== 'undefined') {
-      localStorage.setItem("assistantCollaboration", JSON.stringify({
+      safeLocalStorage.setItem("assistantCollaboration", JSON.stringify({
         message: explanation,
         participants: [],
         timestamp: Date.now(),

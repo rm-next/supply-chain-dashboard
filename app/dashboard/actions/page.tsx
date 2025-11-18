@@ -1,4 +1,5 @@
 "use client"
+import { safeLocalStorage } from "@/lib/localStorage"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,7 +37,7 @@ export default function ActionsPage() {
     const loadRequests = () => {
       if (typeof window === 'undefined') return
       
-      const stored = localStorage.getItem("quoteRequests")
+      const stored = safeLocalStorage.getItem("quoteRequests")
       if (stored) {
         setQuoteRequests(JSON.parse(stored))
       }
@@ -60,7 +61,7 @@ export default function ActionsPage() {
     const updated = quoteRequests.map((req) => (req.id === id ? { ...req, status: newStatus } : req))
     setQuoteRequests(updated)
     if (typeof window !== 'undefined') {
-      localStorage.setItem("quoteRequests", JSON.stringify(updated))
+      safeLocalStorage.setItem("quoteRequests", JSON.stringify(updated))
     }
   }
 

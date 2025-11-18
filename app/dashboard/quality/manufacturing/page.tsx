@@ -1,4 +1,5 @@
 "use client"
+import { safeLocalStorage } from "@/lib/localStorage"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -114,7 +115,7 @@ export default function ManufacturingQualityPage() {
     }
 
     if (typeof window !== 'undefined') {
-      localStorage.setItem("assistantCollaboration", JSON.stringify({
+      safeLocalStorage.setItem("assistantCollaboration", JSON.stringify({
         message: explanations[incident.id] || `Analyzing manufacturing quality issue ${incident.id}...`,
         participants: [],
         type: "quality-explanation"
