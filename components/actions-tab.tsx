@@ -894,11 +894,13 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
 
   useEffect(() => {
     const loadApprovedActions = () => {
+      if (typeof window === 'undefined') return
       const approved = JSON.parse(localStorage.getItem("approvedActions") || "[]")
       setApprovedActionIds(new Set(approved))
     }
 
     const loadQuoteRequests = () => {
+      if (typeof window === 'undefined') return
       const requests = JSON.parse(localStorage.getItem("quoteRequests") || "[]")
       const uniqueRequests = Array.from(
         new Map(requests.map((req: any) => [`${req.supplier}-${req.partNumber}-${req.description}`, req])).values(),
@@ -907,6 +909,7 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
     }
 
     const loadNotesAndStatuses = () => {
+      if (typeof window === 'undefined') return
       const notes = JSON.parse(localStorage.getItem("actionNotes") || "{}")
       const statuses = JSON.parse(localStorage.getItem("actionStatuses") || "{}")
       setActionNotes(notes)
@@ -914,6 +917,7 @@ export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
     }
 
     const loadProgramActions = () => {
+      if (typeof window === 'undefined') return
       const programs = JSON.parse(localStorage.getItem("programActions") || "[]")
       setProgramActions(programs)
     }

@@ -381,6 +381,7 @@ function AssistantChat({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const saved = localStorage.getItem("customShortcuts")
     if (saved) {
       setCustomShortcuts(JSON.parse(saved))
@@ -392,7 +393,7 @@ function AssistantChat({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
   }, [messages])
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && typeof window !== 'undefined') {
       const collabData = localStorage.getItem("assistantCollaboration")
       if (collabData) {
         console.log("[v0] Collaboration data found:", collabData)
