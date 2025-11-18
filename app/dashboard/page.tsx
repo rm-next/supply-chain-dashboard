@@ -6,6 +6,7 @@ import { ActionsTab } from "@/components/actions-tab"
 import { WatchListTab } from "@/components/watch-list-tab"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
+import { safeLocalStorage } from "@/lib/localStorage"
 
 export default function DashboardPage() {
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
@@ -17,10 +18,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const updateCounts = () => {
-      if (typeof window === 'undefined') return
-      
-      const approvedActions = JSON.parse(localStorage.getItem("approvedActions") || "[]")
-      const actionStatuses = JSON.parse(localStorage.getItem("actionStatuses") || "{}")
+      const approvedActions = JSON.parse(safeLocalStorage.getItem("approvedActions") || "[]")
+      const actionStatuses = JSON.parse(safeLocalStorage.getItem("actionStatuses") || "{}")
       
       // Mock counts - in real app would calculate from actual data
       setRecommendationsCount(12)
