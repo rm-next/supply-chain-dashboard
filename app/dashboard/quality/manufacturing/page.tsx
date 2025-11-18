@@ -113,11 +113,13 @@ export default function ManufacturingQualityPage() {
       "MQ-005": `**Manufacturing Quality Root Cause Analysis - Component Tombstoning**\n\n**Incident Summary**: 2.2% defect rate on SMT Line 1 at Foxconn Chengdu for Fire HD 10 Tablet passive component placement.\n\n**Root Cause Identified**:\n\n**Primary Issue**: Solder paste stencil aperture design interaction with component package size\n- Tombstoning occurring on 0201 size resistors and capacitors (0.6mm x 0.3mm)\n- Unequal solder volume on component pads causing lift during reflow\n- Affects high-density routing areas on main system board\n\n**Technical Analysis**:\n- Tombstoning: One end of component lifts off pad, standing vertically during reflow\n- Root cause: Differential wetting force due to solder volume imbalance\n- Stencil aperture design: Pad 1 opening 15% larger than Pad 2 (design error)\n- Larger aperture → more solder paste → higher wetting force → component rotation\n\n**Process Investigation**:\n- New stencil received Jan 15 for product revision B (minor board update)\n- Stencil design review missed aperture asymmetry\n- Issue not present on revision A boards (correct aperture design)\n- Solder paste (Senju M705) application within specification\n- Reflow profile validated - temperature and time parameters correct\n\n**Manufacturing Context**:\n- 1,870 boards processed before issue detected by AOI inspection\n- Defect clustering on 47Ω series resistors in USB power delivery circuit\n- Some tombstoned components causing electrical opens (caught in functional test)\n- No customer impact - all defects caught in-line\n\n**Defect Mechanism**:\n1. Solder paste printing deposits unequal volumes on pads\n2. Component placed on unequal solder deposits\n3. During reflow, larger solder volume melts first, creating wetting force\n4. Surface tension pulls component toward larger solder volume\n5. Component rotates on one end, breaking contact with smaller pad\n6. Result: Component standing vertical (tombstone) or missing contact\n\n**Corrective Actions**:\n1. **Immediate**: Stencil apertures corrected to equal size (0.35mm x 0.20mm both pads)\n2. New stencil manufactured and validated with solder paste print inspection\n3. First article inspection protocol updated to include aperture measurement verification\n4. Stencil design review checklist enhanced with specific 0201 component checks\n5. Affected boards: Rework completed using manual placement and touch-up reflow\n\n**Process Improvements**:\n- Automated stencil aperture measurement added to incoming stencil inspection\n- Design for manufacturability (DFM) review process updated\n- SPC monitoring added for tombstone defect rates (alert threshold: >0.5%)\n\n**Status**: New stencil in production Jan 19. First-pass yield returned to 99.3%. All affected boards reworked and cleared.`,
     }
 
-    localStorage.setItem("assistantCollaboration", JSON.stringify({
-      message: explanations[incident.id] || `Analyzing manufacturing quality issue ${incident.id}...`,
-      participants: [],
-      type: "quality-explanation"
-    }))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("assistantCollaboration", JSON.stringify({
+        message: explanations[incident.id] || `Analyzing manufacturing quality issue ${incident.id}...`,
+        participants: [],
+        type: "quality-explanation"
+      }))
+    }
 
     window.dispatchEvent(new CustomEvent("openAssistantWithCollaboration"))
   }

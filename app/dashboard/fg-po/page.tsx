@@ -198,15 +198,17 @@ Component shipment delays from upstream suppliers are impacting the production s
       }
     ]
 
-    localStorage.setItem("assistantCollaboration", JSON.stringify({
-      message: delayExplanation,
-      participants: [],
-      type: "delay-explanation",
-      resolutionOptions,
-      poNumber: po.poNumber,
-      productName: po.productName,
-      asinNumber: po.asinNumber
-    }))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("assistantCollaboration", JSON.stringify({
+        message: delayExplanation,
+        participants: [],
+        type: "delay-explanation",
+        resolutionOptions,
+        poNumber: po.poNumber,
+        productName: po.productName,
+        asinNumber: po.asinNumber
+      }))
+    }
 
     window.dispatchEvent(new CustomEvent("openAssistantWithCollaboration"))
   }

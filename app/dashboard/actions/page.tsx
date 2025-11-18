@@ -34,6 +34,8 @@ export default function ActionsPage() {
   useEffect(() => {
     // Load quote requests from localStorage
     const loadRequests = () => {
+      if (typeof window === 'undefined') return
+      
       const stored = localStorage.getItem("quoteRequests")
       if (stored) {
         setQuoteRequests(JSON.parse(stored))
@@ -57,7 +59,9 @@ export default function ActionsPage() {
   const updateStatus = (id: string, newStatus: string) => {
     const updated = quoteRequests.map((req) => (req.id === id ? { ...req, status: newStatus } : req))
     setQuoteRequests(updated)
-    localStorage.setItem("quoteRequests", JSON.stringify(updated))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("quoteRequests", JSON.stringify(updated))
+    }
   }
 
   const getStatusIcon = (status: string) => {

@@ -128,11 +128,13 @@ export default function SupplyPlanPage() {
     const shortfall = monthData.demand - monthData.capacity
     const message = `Capacity shortfall detected for ${month}: Demand is ${monthData.demand.toLocaleString()} units but capacity is only ${monthData.capacity.toLocaleString()} units. We need ${shortfall.toLocaleString()} additional units. Can you help increase production capacity?`
     
-    localStorage.setItem("assistantCollaboration", JSON.stringify({
-      message,
-      participants: ["Foxconn - EMS Partner"],
-      timestamp: Date.now()
-    }))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("assistantCollaboration", JSON.stringify({
+        message,
+        participants: ["Foxconn - EMS Partner"],
+        timestamp: Date.now()
+      }))
+    }
     
     window.dispatchEvent(new CustomEvent("openAssistantWithCollaboration"))
   }
@@ -144,12 +146,14 @@ export default function SupplyPlanPage() {
     const shortfall = monthData.demand - monthData.capacity
     const explanation = `I've analyzed the capacity shortage for ${month}:\n\n**Why the shortage exists:**\n• Demand forecast: ${monthData.demand.toLocaleString()} units\n• Current capacity: ${monthData.capacity.toLocaleString()} units\n• Shortfall: ${shortfall.toLocaleString()} units (${Math.round((shortfall/monthData.demand)*100)}%)\n\n**Contributing factors:**\n• Increased market demand for Q2 product launches\n• Limited manufacturing line capacity at current EMS partners\n• Lead time constraints for capacity expansion\n• Seasonal demand spike typical for this period\n\n**Recommendation:**\nI recommend collaborating with your Contract Manufacturer to explore capacity expansion options or alternative production lines.`
     
-    localStorage.setItem("assistantCollaboration", JSON.stringify({
-      message: explanation,
-      participants: [],
-      timestamp: Date.now(),
-      type: "capacity-explanation"
-    }))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("assistantCollaboration", JSON.stringify({
+        message: explanation,
+        participants: [],
+        timestamp: Date.now(),
+        type: "capacity-explanation"
+      }))
+    }
     
     window.dispatchEvent(new CustomEvent("openAssistantWithCollaboration"))
   }

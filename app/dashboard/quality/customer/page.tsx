@@ -107,11 +107,13 @@ export default function CustomerQualityPage() {
       "CQ-005": `**Root Cause Analysis - Power Button Unresponsive**\n\nAnalysis of 891 Fire HD 10 Tablet units with intermittent power button failure:\n\n**Primary Issue**: Tactile switch component premature wear\n- Component: Alps Alpine SKQG series switch\n- Expected lifetime: 200,000 actuations\n- Actual failure: 45,000-60,000 actuations (75% reduction)\n\n**Failure Mode Analysis**:\n- Switch contact plating degradation due to contamination\n- Manufacturing environment humidity spike during supplier's facility renovation\n- Moisture absorption in switch housing causes contact oxidation\n- Affects production lot manufactured Dec 10-18, 2024\n\n**Investigation Findings**:\n- Supplier "Alps Alpine Europe GmbH" conducted facility renovation\n- HVAC system offline during renovation caused humidity spike (65% vs normal 45%)\n- Components manufactured during this period show 8x higher failure rate\n- Issue NOT present in components from other Alps Alpine facilities\n\n**Component Testing Results**:\n- SEM analysis shows copper oxide formation on contacts\n- Contact resistance 12-25Ω vs specified <1Ω\n- Force-displacement curve shows increased actuation force\n\n**Corrective Actions**:\n1. Supplier implementing 100% automated contact resistance testing\n2. Enhanced environmental monitoring during production\n3. Component supplier committed to facility validation before renovation\n4. Incoming inspection updated with electrical contact resistance test\n5. Field replacement program for affected customers\n\n**Timeline**: Supplier corrective action complete Jan 25, issue resolved for new production`,
     }
 
-    localStorage.setItem("assistantCollaboration", JSON.stringify({
-      message: explanations[issue.id] || `Analyzing customer quality issue ${issue.id}...`,
-      participants: [],
-      type: "quality-explanation"
-    }))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("assistantCollaboration", JSON.stringify({
+        message: explanations[issue.id] || `Analyzing customer quality issue ${issue.id}...`,
+        participants: [],
+        type: "quality-explanation"
+      }))
+    }
 
     window.dispatchEvent(new CustomEvent("openAssistantWithCollaboration"))
   }
