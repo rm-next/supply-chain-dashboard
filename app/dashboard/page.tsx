@@ -17,6 +17,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const updateCounts = () => {
+      if (typeof window === 'undefined') return
+      
       const approvedActions = JSON.parse(localStorage.getItem("approvedActions") || "[]")
       const actionStatuses = JSON.parse(localStorage.getItem("actionStatuses") || "{}")
       
