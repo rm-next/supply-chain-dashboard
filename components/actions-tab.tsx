@@ -4,19 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useRole } from "@/hooks/use-role"
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  Check,
-  Pencil,
-  HelpCircle,
-  Bot,
-  User,
-  Database,
-  GitBranch,
-} from "lucide-react"
-import { useEffect, useState } from "react"
+import { AlertCircle, CheckCircle2, Clock, Check, Pencil, HelpCircle, Bot, User, Database, GitBranch } from 'lucide-react'
+import { useEffect, useState, useRef } from "react"
 import {
   Dialog,
   DialogContent,
@@ -28,6 +17,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface Action {
   id: string
@@ -36,7 +26,16 @@ interface Action {
   status: "recommendation" | "approved" | "in-progress" | "complete"
   priority: "high" | "medium" | "low"
   agent: string
+  contributingAgents?: string[]
   roles: string[]
+  timestamp?: string // Added timestamp interface
+  approvedTimestamp?: string // Added approvedTimestamp field
+  program?: {
+    name: string
+    streetDate: string
+    features?: string
+    image?: string
+  }
 }
 
 interface TimelineStep {
@@ -55,6 +54,18 @@ interface ExplainabilityData {
 
 const actions: Action[] = [
   {
+    id: "34",
+    title: "Create Supplier Plan of Record for Fire SMP Horizon streaming media player", // Renamed from Echo Horizon to Fire SMP Horizon
+    description:
+      "New product launch requires comprehensive supplier qualification and capacity planning. Recommend creating SPOR covering 18 suppliers across electronics, mechanical components, and packaging for Aug 2026 production ramp.",
+    status: "recommendation",
+    priority: "high",
+    agent: "Program Agent", // Changed primary agent to Program Agent
+    contributingAgents: ["Supplier Management Agent", "Commodity Agent"], // Added contributing agents
+    roles: ["Material Program Mgr"],
+    timestamp: "2025-01-14 09:30 AM", // Added timestamp to recommendations
+  },
+  {
     id: "1",
     title: "Approve alternate supplier for capacitor shortage",
     description:
@@ -63,6 +74,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Supplier Management Agent",
     roles: ["Material Manager", "Material Program Mgr"],
+    timestamp: "2025-01-15 12:00 PM",
   },
   {
     id: "2",
@@ -72,6 +84,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Supply Planning Agent",
     roles: ["Supply Planner", "Sustaining Ops Program Mgr"],
+    timestamp: "2025-01-10 04:00 PM",
   },
   {
     id: "3",
@@ -81,6 +94,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Logistics Agent",
     roles: ["Logistics Planner"],
+    timestamp: "2025-01-13 02:15 PM",
   },
   {
     id: "4",
@@ -90,6 +104,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "PLM Agent",
     roles: ["Material Program Mgr", "Global Commodity Manager"],
+    timestamp: "2025-01-12 11:45 AM",
   },
   {
     id: "5",
@@ -99,6 +114,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Logistics Agent",
     roles: ["Supply Planner", "Material Manager"],
+    timestamp: "2025-01-11 08:30 AM", // Added timestamp to in-progress items
   },
   {
     id: "6",
@@ -108,6 +124,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Supplier Management Agent",
     roles: ["Global Commodity Manager", "Material Program Mgr"],
+    timestamp: "2025-01-09 10:00 AM",
   },
   {
     id: "7",
@@ -117,6 +134,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Quality Agent",
     roles: ["NPI Ops Program Mgr", "Material Manager"],
+    timestamp: "2025-01-08 03:45 PM",
   },
   {
     id: "8",
@@ -126,6 +144,7 @@ const actions: Action[] = [
     priority: "low",
     agent: "Supply Planning Agent",
     roles: ["Supply Planner", "Material Program Mgr"],
+    timestamp: "2025-01-07 01:20 PM",
   },
   {
     id: "9",
@@ -136,6 +155,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Quality Agent",
     roles: ["Supplier Quality Manager", "Material Manager"],
+    timestamp: "2025-01-18 11:15 AM",
   },
   {
     id: "10",
@@ -145,6 +165,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Quality Agent",
     roles: ["Supplier Quality Manager", "Supply Planner"],
+    timestamp: "2025-01-19 09:00 AM",
   },
   {
     id: "11",
@@ -155,6 +176,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Quality Agent",
     roles: ["Manufacturing Technical Engineer", "Sustaining Ops Program Mgr"],
+    timestamp: "2025-01-20 10:30 AM",
   },
   {
     id: "12",
@@ -165,6 +187,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Quality Agent",
     roles: ["Supplier Quality Manager", "Material Program Mgr"],
+    timestamp: "2025-01-21 11:00 AM",
   },
   {
     id: "13",
@@ -174,6 +197,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Quality Agent",
     roles: ["Manufacturing Technical Engineer", "Supplier Quality Manager"],
+    timestamp: "2025-01-17 09:30 AM",
   },
   {
     id: "14",
@@ -183,6 +207,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Quality Agent",
     roles: ["Supplier Quality Manager"],
+    timestamp: "2025-01-16 02:00 PM",
   },
   {
     id: "15",
@@ -192,6 +217,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Quality Agent",
     roles: ["Manufacturing Technical Engineer"],
+    timestamp: "2025-01-15 04:00 PM",
   },
   {
     id: "16",
@@ -202,6 +228,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Logistics Agent",
     roles: ["Logistics Planner"],
+    timestamp: "2025-01-22 08:00 AM",
   },
   {
     id: "17",
@@ -212,6 +239,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Logistics Agent",
     roles: ["Logistics Planner", "Material Manager"],
+    timestamp: "2025-01-23 09:15 AM",
   },
   {
     id: "18",
@@ -221,6 +249,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Supply Planning Agent",
     roles: ["NPI Ops Program Mgr"],
+    timestamp: "2025-01-12 04:30 PM",
   },
   {
     id: "19",
@@ -231,6 +260,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "PLM Agent",
     roles: ["Sustaining Ops Program Mgr", "Material Program Mgr"],
+    timestamp: "2025-01-24 10:00 AM",
   },
   {
     id: "20",
@@ -241,6 +271,7 @@ const actions: Action[] = [
     priority: "high",
     agent: "Supplier Management Agent",
     roles: ["Global Commodity Manager"],
+    timestamp: "2025-01-08 04:45 PM",
   },
   {
     id: "21",
@@ -251,6 +282,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Supplier Management Agent",
     roles: ["Global Commodity Manager", "NPI Ops Program Mgr"],
+    timestamp: "2025-01-25 11:30 AM",
   },
   {
     id: "22",
@@ -261,6 +293,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Supply Planning Agent",
     roles: ["Supply Planner", "Material Manager"],
+    timestamp: "2025-01-26 01:00 PM",
   },
   {
     id: "23",
@@ -271,6 +304,7 @@ const actions: Action[] = [
     priority: "low",
     agent: "Supplier Management Agent",
     roles: ["Material Manager", "Supply Planner"],
+    timestamp: "2025-01-27 02:15 PM",
   },
   {
     id: "24",
@@ -281,6 +315,7 @@ const actions: Action[] = [
     priority: "medium",
     agent: "Supply Planning Agent",
     roles: ["Sustaining Ops Program Mgr", "Material Program Mgr"],
+    timestamp: "2025-01-28 03:30 PM",
   },
   {
     id: "25",
@@ -291,6 +326,95 @@ const actions: Action[] = [
     priority: "high",
     agent: "Logistics Agent",
     roles: ["Logistics Planner", "Supply Planner"],
+    timestamp: "2025-01-29 04:00 PM",
+  },
+  {
+    id: "26",
+    title: "Strategic sourcing initiative for memory components",
+    description:
+      "Market analysis shows consolidation opportunity across 8 programs. Recommend strategic sourcing initiative to reduce memory component costs by 12% ($340K annual savings).",
+    status: "recommendation",
+    priority: "high",
+    agent: "Supplier Management Agent",
+    roles: ["Product Ops Leader", "Global Commodity Manager"],
+    timestamp: "2025-01-30 08:00 AM",
+  },
+  {
+    id: "27",
+    title: "NPI program portfolio health review",
+    description:
+      "6 of 8 active NPI programs on track. Tablet Gen 5 has 2-week schedule risk due to display panel qualification delay. Smart Home Hub has component obsolescence issue requiring design refresh.",
+    status: "recommendation",
+    priority: "high",
+    agent: "PLM Agent",
+    roles: ["Product Ops Leader", "NPI Ops Program Mgr"],
+    timestamp: "2025-01-31 09:15 AM",
+  },
+  {
+    id: "28",
+    title: "Supply chain resilience improvement plan",
+    description:
+      "Risk assessment identified 12 single-source components across portfolio. Recommend dual-sourcing strategy for critical components to improve supply chain resilience by 35%.",
+    status: "recommendation",
+    priority: "high",
+    agent: "Supply Planning Agent",
+    roles: ["Product Ops Leader", "Material Program Mgr"],
+    timestamp: "2025-02-01 10:00 AM",
+  },
+  {
+    id: "29",
+    title: "Cross-program BOM standardization opportunity",
+    description:
+      "Analysis identified 47 common components across 5 product families. Standardization initiative could reduce unique SKUs by 28% and improve purchasing power.",
+    status: "recommendation",
+    priority: "medium",
+    agent: "PLM Agent",
+    roles: ["Product Ops Leader", "Material Program Mgr"],
+    timestamp: "2025-02-02 11:30 AM",
+  },
+  {
+    id: "30",
+    title: "Supplier performance scorecard review",
+    description:
+      "Q1 supplier performance data shows 3 suppliers below target (quality <95%). Recommend supplier improvement plans and alternate qualification for at-risk components.",
+    status: "recommendation",
+    priority: "medium",
+    agent: "Quality Agent",
+    roles: ["Product Ops Leader", "Supplier Quality Manager"],
+    timestamp: "2025-02-03 01:00 PM",
+  },
+  {
+    id: "31",
+    title: "Manufacturing capacity planning for H2",
+    description:
+      "Demand forecast shows 40% volume increase in Q3-Q4. Current CM capacity at 85% utilization. Recommend securing additional manufacturing capacity by end of Q2.",
+    status: "recommendation",
+    priority: "high",
+    agent: "Supply Planning Agent",
+    roles: ["Product Ops Leader", "Sustaining Ops Program Mgr"],
+    timestamp: "2025-02-04 02:15 PM",
+  },
+  {
+    id: "32",
+    title: "Supply chain cost optimization roadmap",
+    description:
+      "Identified $1.2M additional cost reduction opportunities across logistics (18%), component consolidation (22%), and supplier negotiations (60%). Recommend 6-month execution plan.",
+    status: "recommendation",
+    priority: "medium",
+    agent: "Supplier Management Agent",
+    roles: ["Product Ops Leader", "Global Commodity Manager"],
+    timestamp: "2025-02-05 03:30 PM",
+  },
+  {
+    id: "33",
+    title: "NPI-to-production transition excellence review",
+    description:
+      "Last 3 NPI programs averaged 2.3 weeks delay in production ramp. Root cause analysis points to supplier readiness and test equipment availability. Recommend process improvements.",
+    status: "recommendation",
+    priority: "medium",
+    agent: "PLM Agent",
+    roles: ["Product Ops Leader", "NPI Ops Program Mgr"],
+    timestamp: "2025-02-06 04:00 PM",
   },
 ]
 
@@ -301,7 +425,8 @@ const explainabilityData: Record<string, TimelineStep[]> = {
       timestamp: "2024-01-15 08:00 AM",
       actor: "Supply Chain Data Lake",
       action: "Component shortage detected",
-      details: "C2847 capacitor lead time extended from 2 weeks to 6 weeks due to supplier production issues",
+      details:
+        "C2847 capacitor lead time extended from 2 weeks to 6 weeks due to supplier production issues",
       icon: "database",
     },
     {
@@ -372,7 +497,7 @@ const explainabilityData: Record<string, TimelineStep[]> = {
       actor: "Supplier Management Domain Agent",
       action: "Recommendation generated",
       details:
-        "High priority recommendation: Qualify alternate supplier with 1-week lead time to prevent production delays",
+        "High priority: Qualify alternate supplier with 1-week lead time to prevent production delays",
       icon: "branch",
     },
   ],
@@ -699,6 +824,7 @@ const getDefaultTimeline = (action: Action): TimelineStep[] => {
     "Logistics Agent": "Logistics Domain Agent",
     "Quality Agent": "Quality Domain Agent",
     "PLM Agent": "PLM Domain Agent",
+    "Program Agent": "Program Domain Agent", // Added for Program Agent
   }
 
   const mappedAgent = agentMap[action.agent] || action.agent
@@ -747,7 +873,11 @@ const getDefaultTimeline = (action: Action): TimelineStep[] => {
   ]
 }
 
-export function ActionsTab() {
+interface ActionsTabProps {
+  activeTab?: string
+}
+
+export function ActionsTab({ activeTab = "recommendations" }: ActionsTabProps) {
   const { role } = useRole()
   const [quoteRequests, setQuoteRequests] = useState<any[]>([])
   const [approvedActionIds, setApprovedActionIds] = useState<Set<string>>(new Set())
@@ -757,6 +887,10 @@ export function ActionsTab() {
   const [actionNotes, setActionNotes] = useState<Record<string, string>>({})
   const [actionStatuses, setActionStatuses] = useState<Record<string, string>>({})
   const [explainabilityAction, setExplainabilityAction] = useState<Action | null>(null)
+  const [programActions, setProgramActions] = useState<Action[]>([])
+  // Removed internal activeTab state as it's now a prop
+
+  const approvedSectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const loadApprovedActions = () => {
@@ -779,13 +913,53 @@ export function ActionsTab() {
       setActionStatuses(statuses)
     }
 
+    const loadProgramActions = () => {
+      const programs = JSON.parse(localStorage.getItem("programActions") || "[]")
+      setProgramActions(programs)
+    }
+
     loadApprovedActions()
     loadQuoteRequests()
     loadNotesAndStatuses()
+    loadProgramActions()
 
-    window.addEventListener("storage", loadQuoteRequests)
-    return () => window.removeEventListener("storage", loadQuoteRequests)
+    const handleStorageChange = () => {
+      loadQuoteRequests()
+      loadProgramActions()
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    return () => window.removeEventListener("storage", handleStorageChange)
   }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("scrollTo") === "approved") { // Modified to handle approved tab scrolling
+      // setActiveTab("approved") // Removed as activeTab is now a prop
+      setTimeout(() => {
+        approvedSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }, 300)
+    }
+  }, [])
+
+  const handleActionClick = (action: Action) => {
+    if (action.id === "34") {
+      const params = new URLSearchParams()
+      params.set("program", "PRG-008")
+      params.set("tab", "supplier")
+      window.location.replace(`/dashboard/program?${params.toString()}`)
+    }
+  }
+
+  const handleExplainQuality = (actionId: string) => {
+    const qualityMessage = "I'm analyzing the IC chip quality issue. Recent shipment from ABC Semiconductors showed a 3.2% defect rate, which exceeds our 1% threshold. Let me explain what happened and our response plan."
+    
+    window.dispatchEvent(
+      new CustomEvent("openAssistantWithMessage", {
+        detail: { message: qualityMessage }
+      })
+    )
+  }
 
   const getEffectiveStatus = (action: Action): Action["status"] => {
     if (actionStatuses[action.id]) {
@@ -867,7 +1041,7 @@ export function ActionsTab() {
     roles: [role],
   }))
 
-  const allActions = [...quoteRequestActions, ...filteredActions]
+  const allActions = [...quoteRequestActions, ...programActions, ...filteredActions]
 
   const allRecommendations = allActions.filter((a) => {
     const status = getEffectiveStatus(a)
@@ -878,22 +1052,28 @@ export function ActionsTab() {
   const approved = allActions.filter((a) => {
     const status = getEffectiveStatus(a)
     return status === "approved"
+  }).sort((a, b) => { // Sort approved items by timestamp (most recent first)
+    const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+    const timeA = approvedTimestamps[a.id] ? new Date(approvedTimestamps[a.id]).getTime() : 0
+    const timeB = approvedTimestamps[b.id] ? new Date(approvedTimestamps[b.id]).getTime() : 0
+    return timeB - timeA // Most recent first
   })
 
-  const inProgress = allActions.filter((a) => {
+  const inProgressAndCompleted = allActions.filter((a) => {
     const status = getEffectiveStatus(a)
-    return status === "in-progress"
+    return status === "in-progress" || status === "complete"
   })
 
-  const completed = allActions.filter((a) => {
-    const status = getEffectiveStatus(a)
-    return status === "complete"
-  })
 
   const handleApprove = (actionId: string) => {
     const newApprovedIds = new Set(approvedActionIds)
     newApprovedIds.add(actionId)
     setApprovedActionIds(newApprovedIds)
+
+    const timestamp = new Date().toISOString()
+    const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+    approvedTimestamps[actionId] = timestamp
+    localStorage.setItem("approvedTimestamps", JSON.stringify(approvedTimestamps))
 
     localStorage.setItem("approvedActions", JSON.stringify(Array.from(newApprovedIds)))
 
@@ -909,7 +1089,7 @@ export function ActionsTab() {
     const quoteRequest = quoteRequests.find((req) => req.id === actionId)
     if (quoteRequest) {
       const updatedRequests = quoteRequests.filter((req) => req.id !== actionId)
-      localStorage.setItem("quoteRequests", JSON.stringify(updatedRequests))
+      localStorage.setItem("quoteRequests", JSON.JSON.stringify(updatedRequests))
       setQuoteRequests(updatedRequests)
     }
   }
@@ -935,7 +1115,7 @@ export function ActionsTab() {
       const newApprovedIds = new Set(approvedActionIds)
       newApprovedIds.add(editingAction.id)
       setApprovedActionIds(newApprovedIds)
-      localStorage.setItem("approvedActions", JSON.stringify(Array.from(newApprovedIds)))
+      localStorage.setItem("approvedActions", JSON.JSON.stringify(Array.from(newApprovedIds)))
     }
 
     setEditingAction(null)
@@ -951,73 +1131,140 @@ export function ActionsTab() {
     action,
     showActions = false,
     showEdit = false,
-  }: { action: Action; showActions?: boolean; showEdit?: boolean }) => (
-    <Card>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="space-y-1 flex-1">
-            <div className="flex items-center gap-2">
-              {getStatusIcon(getEffectiveStatus(action))}
-              <CardTitle className="text-base">{action.title}</CardTitle>
+  }: { action: Action; showActions?: boolean; showEdit?: boolean }) => {
+    const approvedTimestamps = JSON.parse(localStorage.getItem("approvedTimestamps") || "{}")
+    const approvedTimestamp = approvedTimestamps[action.id]
+    const displayTimestamp = approvedTimestamp || action.timestamp
+    const timestampLabel = approvedTimestamp ? "Approved" : "Created"
+
+    const getAgentColor = (agentName: string) => {
+      if (agentName.includes("Supply Chain") || agentName.includes("Device Ops")) {
+        return "bg-blue-100 text-blue-800 border-blue-200"
+      }
+      if (agentName.includes("PLM")) {
+        return "bg-purple-100 text-purple-800 border-purple-200"
+      }
+      if (agentName.includes("Supplier Management")) {
+        return "bg-green-100 text-green-800 border-green-200"
+      }
+      if (agentName.includes("Planning")) {
+        return "bg-amber-100 text-amber-800 border-amber-200"
+      }
+      if (agentName.includes("Quality")) {
+        return "bg-red-100 text-red-800 border-red-200"
+      }
+      if (agentName.includes("Logistics")) {
+        return "bg-cyan-100 text-cyan-800 border-cyan-200"
+      }
+      if (agentName.includes("Program")) { // Added color for Program Agent
+        return "bg-indigo-100 text-indigo-800 border-indigo-200"
+      }
+      return "bg-gray-100 text-gray-800 border-gray-200"
+    }
+
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="space-y-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  {getStatusIcon(getEffectiveStatus(action))}
+                  <CardTitle
+                    className={`text-base ${action.id === "34" ? "cursor-pointer hover:text-primary hover:underline" : ""}`}
+                    onClick={() => action.id === "34" && handleActionClick(action)}
+                  >
+                    {action.title}
+                  </CardTitle>
+                </div>
+                <CardDescription className="text-sm">{action.description}</CardDescription>
+
+                {displayTimestamp && (
+                  <p className="text-xs text-muted-foreground">
+                    {timestampLabel}: {new Date(displayTimestamp).toLocaleString()}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  onClick={() => {
+                    if (action.id === "10") {
+                      handleExplainQuality(action.id)
+                    } else {
+                      setExplainabilityAction(action)
+                    }
+                    // </CHANGE>
+                  }}
+                  title="View decision explanation"
+                >
+                  <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                </Button>
+                <Badge variant={getPriorityColor(action.priority)}>{action.priority}</Badge>
+              </div>
             </div>
-            <CardDescription>{action.description}</CardDescription>
+
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Agents:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium ${getAgentColor(action.agent)}`}>
+                    <Bot className="h-3 w-3" />
+                    <span>{action.agent}</span>
+                  </div>
+                  {action.contributingAgents && action.contributingAgents.map((agent, idx) => (
+                    <div
+                      key={idx}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium ${getAgentColor(agent)}`}
+                    >
+                      <Bot className="h-3 w-3" />
+                      <span>{agent}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {(showActions || showEdit) && (
+                <div className="flex items-start gap-2 flex-shrink-0">
+                  {showActions && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => handleDismiss(action.id)}>
+                        Dismiss
+                      </Button>
+                      <Button size="sm" onClick={() => handleApprove(action.id)}>
+                        Approve
+                      </Button>
+                    </>
+                  )}
+                  {showEdit && (
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(action)}>
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* </CHANGE> */}
+
             {actionNotes[action.id] && (
-              <div className="mt-2 p-2 bg-muted rounded-md">
+              <div className="p-2 bg-muted rounded-md">
                 <p className="text-sm text-muted-foreground">
                   <span className="font-medium">Notes:</span> {actionNotes[action.id]}
                 </p>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2 ml-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 w-8 p-0"
-              onClick={() => setExplainabilityAction(action)}
-              title="View decision explanation"
-            >
-              <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-primary" />
-            </Button>
-            <Badge variant={getPriorityColor(action.priority)}>{action.priority}</Badge>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{action.agent}</p>
-          <div className="flex gap-2">
-            {showActions && (
-              <>
-                <Button size="sm" variant="outline" onClick={() => handleDismiss(action.id)}>
-                  Dismiss
-                </Button>
-                <Button size="sm" onClick={() => handleApprove(action.id)}>
-                  Approve
-                </Button>
-              </>
-            )}
-            {showEdit && (
-              <Button size="sm" variant="outline" onClick={() => handleEdit(action)}>
-                <Pencil className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
+        </CardHeader>
+      </Card>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      {/* Recommendations */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <AlertCircle className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Recommendations</h2>
-          <Badge variant="secondary">{recommendations.length}</Badge>
-        </div>
+      {activeTab === "recommendations" && (
         <div className="grid gap-4">
           {recommendations.length > 0 ? (
             recommendations.map((action) => <ActionCard key={action.id} action={action} showActions={true} />)
@@ -1029,59 +1276,35 @@ export function ActionsTab() {
             </Card>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Approved */}
-      {approved.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Check className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold">Approved</h2>
-            <Badge variant="secondary">{approved.length}</Badge>
-          </div>
-          <div className="grid gap-4">
-            {approved.map((action) => (
-              <ActionCard key={action.id} action={action} showEdit={true} />
-            ))}
-          </div>
+      {activeTab === "approved" && (
+        <div ref={approvedSectionRef} className="grid gap-4">
+          {approved.length > 0 ? (
+            approved.map((action) => <ActionCard key={action.id} action={action} showEdit={true} />)
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No approved actions yet
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 
-      {/* In Progress */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">In Progress</h2>
-          <Badge variant="secondary">{inProgress.length}</Badge>
-        </div>
+      {activeTab === "in-progress" && (
         <div className="grid gap-4">
-          {inProgress.length > 0 ? (
-            inProgress.map((action) => <ActionCard key={action.id} action={action} showEdit={true} />)
+          {inProgressAndCompleted.length > 0 ? (
+            inProgressAndCompleted.map((action) => <ActionCard key={action.id} action={action} showEdit={true} />)
           ) : (
             <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">No actions in progress</CardContent>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No actions in progress or completed
+              </CardContent>
             </Card>
           )}
         </div>
-      </div>
-
-      {/* Completed */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <CheckCircle2 className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Completed</h2>
-          <Badge variant="secondary">{completed.length}</Badge>
-        </div>
-        <div className="grid gap-4">
-          {completed.length > 0 ? (
-            completed.map((action) => <ActionCard key={action.id} action={action} showEdit={true} />)
-          ) : (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">No completed actions</CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Edit Dialog */}
       <Dialog open={!!editingAction} onOpenChange={(open) => !open && handleCancelEdit()}>

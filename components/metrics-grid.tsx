@@ -1,31 +1,71 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  TrendingUp,
-  TrendingDown,
-  Package,
-  Truck,
-  AlertTriangle,
-  CheckCircle,
-  Factory,
-  Users,
-  DollarSign,
-  Clock,
-  Calendar,
-  Target,
-  BarChart3,
-  ShoppingCart,
-  ShieldAlert,
-  ShieldCheck,
-  XCircle,
-} from "lucide-react"
+import { TrendingUp, TrendingDown, Package, Truck, AlertTriangle, CheckCircle, Factory, Users, DollarSign, Clock, Calendar, Target, BarChart3, ShoppingCart, ShieldAlert, ShieldCheck, XCircle } from 'lucide-react'
 import { useRole } from "@/hooks/use-role"
 
 export function MetricsGrid() {
   const { role } = useRole()
 
   const metricsByRole = {
+    "Product Ops Leader": [
+      {
+        title: "Total NPI Programs",
+        value: "8",
+        change: "+2",
+        trend: "up",
+        icon: Target,
+      },
+      {
+        title: "Programs On Schedule",
+        value: "75%",
+        change: "+8%",
+        trend: "up",
+        icon: CheckCircle,
+      },
+      {
+        title: "Overall BOM Cost",
+        value: "$4.2M",
+        change: "-$180K",
+        trend: "down",
+        icon: DollarSign,
+      },
+      {
+        title: "Supply Chain Health",
+        value: "94%",
+        change: "+3%",
+        trend: "up",
+        icon: TrendingUp,
+      },
+      {
+        title: "Active Suppliers",
+        value: "127",
+        change: "+8",
+        trend: "up",
+        icon: Users,
+      },
+      {
+        title: "Critical Issues",
+        value: "5",
+        change: "-3",
+        trend: "down",
+        icon: AlertTriangle,
+      },
+      {
+        title: "On-Time Delivery",
+        value: "96.2%",
+        change: "+1.4%",
+        trend: "up",
+        icon: Truck,
+      },
+      {
+        title: "Cost Savings (YTD)",
+        value: "$2.8M",
+        change: "+$420K",
+        trend: "up",
+        icon: BarChart3,
+      },
+    ],
     "NPI Ops Program Mgr": [
       {
         title: "Active NPI Programs",

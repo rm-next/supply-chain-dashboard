@@ -2,21 +2,27 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter } from 'next/navigation'
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Package } from "lucide-react"
+import { Package } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [role, setRole] = useState("")
+  const [role, setRole] = useState("oem")
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    if (email === "dots@amazon.com") {
+      setPassword("connect-the-dots")
+    }
+  }, [email])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,8 +85,8 @@ export default function LoginPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="oem">OEM</SelectItem>
-                  <SelectItem value="contract-manufacturer">Contract Manufacturer</SelectItem>
                   <SelectItem value="supplier">Supplier</SelectItem>
+                  <SelectItem value="contract-manufacturer">Contract Manufacturer</SelectItem>
                 </SelectContent>
               </Select>
             </div>

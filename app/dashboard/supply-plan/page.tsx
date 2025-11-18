@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { useState } from "react"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Sparkles } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -11,6 +11,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const combinedPlanData = [
   {
@@ -37,14 +44,14 @@ const combinedPlanData = [
   {
     month: "Apr",
     supply: 55000,
-    demand: 54000,
+    demand: 58000, // Demand exceeds capacity
     inventory: 75000,
     capacity: 55000,
   },
   {
     month: "May",
     supply: 58000,
-    demand: 57000,
+    demand: 62000, // Demand exceeds capacity
     inventory: 72000,
     capacity: 60000,
   },
@@ -85,49 +92,139 @@ const capacityPlanData = [
 ]
 
 export default function SupplyPlanPage() {
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["supply", "demand", "inventory", "capacity"])
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(["supply", "demand", "capacity"])
+  const [selectedProgram, setSelectedProgram] = useState<string>("PRG-008")
+  const [selectedManufacturer, setSelectedManufacturer] = useState<string>("foxconn")
+  const [hoveredCell, setHoveredCell] = useState<{ month: string; metric: string } | null>(null)
+
+  const programs = [
+    { id: "all", name: "All Programs" },
+    { id: "PRG-008", name: "Fire SMP Horizon" },
+    { id: "PRG-001", name: "Echo Show 15" },
+    { id: "PRG-002", name: "Kindle Paperwhite Signature" },
+    { id: "PRG-003", name: "Echo Frames Gen 2" },
+  ]
+
+  const manufacturers = [
+    { id: "all", name: "All Manufacturers" },
+    { id: "foxconn", name: "Foxconn Technology Group" },
+    { id: "pegatron", name: "Pegatron Corporation" },
+    { id: "flex", name: "Flex Ltd." },
+    { id: "jabil", name: "Jabil Circuit" },
+  ]
 
   const toggleMetric = (metric: string) => {
     setSelectedMetrics((prev) => (prev.includes(metric) ? prev.filter((m) => m !== metric) : [...prev, metric]))
   }
 
+  const hasCapacityIssue = (monthData: typeof combinedPlanData[0]) => {
+    return monthData.demand > monthData.capacity
+  }
+
+  const handleCollaborate = (month: string) => {
+    const monthData = combinedPlanData.find(d => d.month === month)
+    if (!monthData) return
+
+    const shortfall = monthData.demand - monthData.capacity
+    const message = `Capacity shortfall detected for ${month}: Demand is ${monthData.demand.toLocaleString()} units but capacity is only ${monthData.capacity.toLocaleString()} units. We need ${shortfall.toLocaleString()} additional units. Can you help increase production capacity?`
+    
+    localStorage.setItem("assistantCollaboration", JSON.stringify({
+      message,
+      participants: ["Foxconn - EMS Partner"],
+      timestamp: Date.now()
+    }))
+    
+    window.dispatchEvent(new CustomEvent("openAssistantWithCollaboration"))
+  }
+
+  const handleExplainShortage = (month: string) => {
+    const monthData = combinedPlanData.find(d => d.month === month)
+    if (!monthData) return
+
+    const shortfall = monthData.demand - monthData.capacity
+    const explanation = `I've analyzed the capacity shortage for ${month}:\n\n**Why the shortage exists:**\n• Demand forecast: ${monthData.demand.toLocaleString()} units\n• Current capacity: ${monthData.capacity.toLocaleString()} units\n• Shortfall: ${shortfall.toLocaleString()} units (${Math.round((shortfall/monthData.demand)*100)}%)\n\n**Contributing factors:**\n• Increased market demand for Q2 product launches\n• Limited manufacturing line capacity at current EMS partners\n• Lead time constraints for capacity expansion\n• Seasonal demand spike typical for this period\n\n**Recommendation:**\nI recommend collaborating with your Contract Manufacturer to explore capacity expansion options or alternative production lines.`
+    
+    localStorage.setItem("assistantCollaboration", JSON.stringify({
+      message: explanation,
+      participants: [],
+      timestamp: Date.now(),
+      type: "capacity-explanation"
+    }))
+    
+    window.dispatchEvent(new CustomEvent("openAssistantWithCollaboration"))
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Overall Plan</h1>
-        <p className="text-muted-foreground mt-1">
-          AI-powered supply planning with demand forecasting and inventory optimization
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Overall Plan</h1>
+          <p className="text-muted-foreground mt-1">
+            AI-powered supply planning with demand forecasting and inventory optimization
+          </p>
+        </div>
+        
+        <div className="flex gap-3">
+          <div className="w-64">
+            <Select value={selectedProgram} onValueChange={setSelectedProgram}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select program" />
+              </SelectTrigger>
+              <SelectContent>
+                {programs.map((program) => (
+                  <SelectItem key={program.id} value={program.id}>
+                    {program.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="w-64">
+            <Select value={selectedManufacturer} onValueChange={setSelectedManufacturer}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select manufacturer" />
+              </SelectTrigger>
+              <SelectContent>
+                {manufacturers.map((manufacturer) => (
+                  <SelectItem key={manufacturer.id} value={manufacturer.id}>
+                    {manufacturer.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Forecast Accuracy</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Clear to Build</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">92.4%</div>
-            <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
+            <div className="text-3xl font-bold text-green-600">94.2%</div>
+            <p className="text-xs text-muted-foreground mt-1">Components available</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Optimal Stock Level</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Scheduled Orders (Week)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">87%</div>
-            <p className="text-xs text-muted-foreground mt-1">Current vs target</p>
+            <div className="text-3xl font-bold text-foreground">127</div>
+            <p className="text-xs text-muted-foreground mt-1">Manufacturing orders this week</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Supply Risk Score</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Capacity Utilization</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">Low</div>
-            <p className="text-xs text-muted-foreground mt-1">2.3/10 risk index</p>
+            <div className="text-3xl font-bold text-blue-600">87.3%</div>
+            <p className="text-xs text-muted-foreground mt-1">Current production capacity</p>
           </CardContent>
         </Card>
       </div>
@@ -156,12 +253,6 @@ export default function SupplyPlanPage() {
                   Demand
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
-                  checked={selectedMetrics.includes("inventory")}
-                  onCheckedChange={() => toggleMetric("inventory")}
-                >
-                  Inventory
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
                   checked={selectedMetrics.includes("capacity")}
                   onCheckedChange={() => toggleMetric("capacity")}
                 >
@@ -185,9 +276,6 @@ export default function SupplyPlanPage() {
                 )}
                 {selectedMetrics.includes("demand") && (
                   <Line type="monotone" dataKey="demand" stroke="#3B82F6" name="Demand" strokeWidth={2} />
-                )}
-                {selectedMetrics.includes("inventory") && (
-                  <Line type="monotone" dataKey="inventory" stroke="#10B981" name="Inventory" strokeWidth={2} />
                 )}
                 {selectedMetrics.includes("capacity") && (
                   <Line type="monotone" dataKey="capacity" stroke="#F59E0B" name="Capacity" strokeWidth={2} />
@@ -229,22 +317,33 @@ export default function SupplyPlanPage() {
                     ))}
                   </tr>
                 )}
-                {selectedMetrics.includes("inventory") && (
-                  <tr className="border-t">
-                    <td className="p-3 font-medium sticky left-0 bg-background z-10">Inventory</td>
-                    {combinedPlanData.map((data) => (
-                      <td key={data.month} className="p-3 text-right whitespace-nowrap">
-                        {data.inventory.toLocaleString()}
-                      </td>
-                    ))}
-                  </tr>
-                )}
                 {selectedMetrics.includes("capacity") && (
                   <tr className="border-t">
                     <td className="p-3 font-medium sticky left-0 bg-background z-10">Capacity</td>
                     {combinedPlanData.map((data) => (
-                      <td key={data.month} className="p-3 text-right whitespace-nowrap">
-                        {data.capacity.toLocaleString()}
+                      <td 
+                        key={data.month} 
+                        className={`p-3 text-right whitespace-nowrap relative ${
+                          hasCapacityIssue(data) ? "bg-red-50 dark:bg-red-950/20" : ""
+                        }`}
+                        onMouseEnter={() => hasCapacityIssue(data) && setHoveredCell({ month: data.month, metric: "capacity" })}
+                        onMouseLeave={() => setHoveredCell(null)}
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          <span className={hasCapacityIssue(data) ? "text-red-600 dark:text-red-400 font-semibold" : ""}>
+                            {data.capacity.toLocaleString()}
+                          </span>
+                          {hasCapacityIssue(data) && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={() => handleExplainShortage(data.month)}
+                            >
+                              <Sparkles className="h-4 w-4 text-primary" />
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     ))}
                   </tr>

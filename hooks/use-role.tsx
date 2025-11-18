@@ -12,6 +12,7 @@ export type Role =
   | "Material Manager"
   | "Supplier Quality Manager"
   | "Manufacturing Technical Engineer"
+  | "Product Ops Leader" // Added Product Ops Leader role
 
 interface RoleStore {
   role: Role
@@ -23,6 +24,7 @@ export const useRoleStore = create<RoleStore>((set) => ({
   role: "Supply Planner",
   setRole: (role) => set({ role }),
   roles: [
+    "Product Ops Leader", // Added as first option for executive-level role
     "NPI Ops Program Mgr",
     "Sustaining Ops Program Mgr",
     "Material Program Mgr",

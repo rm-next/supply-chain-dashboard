@@ -9,12 +9,14 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Search, History, Pencil } from "lucide-react"
+import { Search, History, Pencil, Sparkles } from 'lucide-react'
 
 interface ToolingCost {
   id: string
   toolName: string
   type: string
+  supplier: string
+  site: string
   projectedCost: number
   actualCost: number
   amortizationPeriod: string
@@ -37,6 +39,8 @@ const toolingCosts: ToolingCost[] = [
     id: "TOOL-001",
     toolName: "Injection Mold - Housing",
     type: "Plastic Injection",
+    supplier: "Foxconn",
+    site: "Shenzhen, China",
     projectedCost: 45000,
     actualCost: 47500,
     amortizationPeriod: "24 months",
@@ -73,6 +77,8 @@ const toolingCosts: ToolingCost[] = [
     id: "TOOL-002",
     toolName: "Die Cast - Aluminum Frame",
     type: "Die Casting",
+    supplier: "Flex",
+    site: "Guadalajara, Mexico",
     projectedCost: 78000,
     actualCost: 78000,
     amortizationPeriod: "36 months",
@@ -109,6 +115,8 @@ const toolingCosts: ToolingCost[] = [
     id: "TOOL-003",
     toolName: "PCB Test Fixture",
     type: "Testing Equipment",
+    supplier: "Jabil",
+    site: "Penang, Malaysia",
     projectedCost: 12000,
     actualCost: 13200,
     amortizationPeriod: "18 months",
@@ -137,6 +145,8 @@ const toolingCosts: ToolingCost[] = [
     id: "TOOL-004",
     toolName: "Assembly Jig - Display",
     type: "Assembly Tooling",
+    supplier: "Pegatron",
+    site: "Shanghai, China",
     projectedCost: 8500,
     actualCost: 8200,
     amortizationPeriod: "12 months",
@@ -173,6 +183,8 @@ const toolingCosts: ToolingCost[] = [
     id: "TOOL-005",
     toolName: "Stamping Die - Metal Parts",
     type: "Metal Stamping",
+    supplier: "Compal",
+    site: "Kunshan, China",
     projectedCost: 32000,
     actualCost: 32000,
     amortizationPeriod: "24 months",
@@ -201,6 +213,8 @@ const toolingCosts: ToolingCost[] = [
     id: "TOOL-006",
     toolName: "Legacy Housing Mold",
     type: "Plastic Injection",
+    supplier: "Foxconn",
+    site: "Chennai, India",
     projectedCost: 38000,
     actualCost: 38000,
     amortizationPeriod: "24 months",
@@ -234,6 +248,8 @@ export default function ToolingCostPage() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editedProjectedCost, setEditedProjectedCost] = useState("")
   const [editedActualCost, setEditedActualCost] = useState("")
+  const [hoveredCostCell, setHoveredCostCell] = useState<string | null>(null)
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null)
 
   const filteredTooling = toolingCosts.filter(
     (tool) =>
@@ -276,6 +292,83 @@ export default function ToolingCostPage() {
     setShowEditDialog(false)
   }
 
+  const handleShouldCostExplain = (e: React.MouseEvent, tool: ToolingCost) => {
+    e.stopPropagation()
+    
+    const shouldCostAnalysis = {
+      toolName: tool.toolName,
+      toolId: tool.id,
+      toolType: tool.type,
+      supplier: tool.supplier,
+      site: tool.site,
+      shouldCost: tool.projectedCost,
+      actualCost: tool.actualCost,
+      calculation: {
+        title: "Tooling Should Cost Analysis",
+        methodology: "Based on historical tooling costs, supplier benchmarks, and complexity factors",
+        factors: [
+          {
+            name: "Tool Complexity & Type",
+            value: `${tool.type} - ${tool.toolName}`,
+            weight: "35%",
+            impact: `Similar ${tool.type.toLowerCase()} tools range from $${(tool.projectedCost * 0.85).toLocaleString()} to $${(tool.projectedCost * 1.15).toLocaleString()}`
+          },
+          {
+            name: "Supplier Historical Performance",
+            value: `${tool.supplier} - ${tool.site}`,
+            weight: "30%",
+            impact: tool.costHistory.length > 0 
+              ? `Historical average: $${(tool.costHistory.reduce((acc, h) => acc + h.newCost, 0) / tool.costHistory.length).toLocaleString()}`
+              : "First-time supplier engagement"
+          },
+          {
+            name: "Market Benchmarks",
+            value: "Industry standard pricing for similar tooling",
+            weight: "25%",
+            impact: `Market benchmark range: $${(tool.projectedCost * 0.90).toLocaleString()}-$${(tool.projectedCost * 1.10).toLocaleString()}`
+          },
+          {
+            name: "Amortization Impact",
+            value: `${tool.amortizationPeriod} across ${tool.programsUsing.length} programs`,
+            weight: "10%",
+            impact: `Per-unit impact optimized across ${tool.programsUsing.join(", ")}`
+          }
+        ],
+        comparableTooling: [
+          { 
+            type: tool.type, 
+            supplier: "Benchmark Supplier A", 
+            cost: (tool.projectedCost * 0.93).toFixed(0),
+            site: "Similar region"
+          },
+          { 
+            type: tool.type, 
+            supplier: "Benchmark Supplier B", 
+            cost: (tool.projectedCost * 1.05).toFixed(0),
+            site: "Alternative location"
+          },
+          { 
+            type: tool.type, 
+            supplier: "Benchmark Supplier C", 
+            cost: (tool.projectedCost * 0.98).toFixed(0),
+            site: "Domestic option"
+          }
+        ]
+      },
+      conclusion: `The should cost of $${tool.projectedCost.toLocaleString()} represents a competitive investment for this ${tool.type.toLowerCase()} tool based on weighted analysis of tool complexity (35%), supplier performance (30%), market benchmarks (25%), and amortization optimization (10%). The pricing aligns with industry standards and historical data.`
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("openAssistantWithMessage", {
+        detail: {
+          message: `Analyzing tooling should cost for ${tool.toolName}...`,
+          type: "tooling-cost-explanation",
+          toolingCostData: shouldCostAnalysis,
+        },
+      })
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -302,21 +395,51 @@ export default function ToolingCostPage() {
               <TableHead>Tool ID</TableHead>
               <TableHead>Tool Name</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead className="text-right">Projected Cost</TableHead>
+              <TableHead>Supplier & Site</TableHead>
+              <TableHead className="text-right">Should Cost</TableHead>
               <TableHead className="text-right">Actual Cost</TableHead>
               <TableHead>Amortization</TableHead>
               <TableHead>Programs Using</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredTooling.map((tool) => (
-              <TableRow key={tool.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleRowClick(tool)}>
+              <TableRow 
+                key={tool.id} 
+                className="cursor-pointer hover:bg-muted/50 relative" 
+                onClick={() => handleRowClick(tool)}
+                onMouseEnter={() => setHoveredRow(tool.id)} 
+                onMouseLeave={() => setHoveredRow(null)}
+              >
                 <TableCell className="font-medium">{tool.id}</TableCell>
                 <TableCell>{tool.toolName}</TableCell>
                 <TableCell>{tool.type}</TableCell>
-                <TableCell className="text-right font-semibold">${tool.projectedCost.toLocaleString()}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{tool.supplier}</span>
+                    <span className="text-xs text-muted-foreground">{tool.site}</span>
+                  </div>
+                </TableCell>
+                <TableCell 
+                  className="text-right"
+                  onMouseEnter={() => setHoveredCostCell(tool.id)}
+                  onMouseLeave={() => setHoveredCostCell(null)}
+                >
+                  <div className="flex items-center justify-end gap-2">
+                    <span className="font-semibold">${tool.projectedCost.toLocaleString()}</span>
+                    {hoveredCostCell === tool.id && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => handleShouldCostExplain(e, tool)}
+                      >
+                        <Sparkles className="h-4 w-4 text-primary" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-right font-semibold">${tool.actualCost.toLocaleString()}</TableCell>
                 <TableCell>{tool.amortizationPeriod}</TableCell>
                 <TableCell>
@@ -328,15 +451,22 @@ export default function ToolingCostPage() {
                     ))}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="relative">
                   <Badge variant="secondary" className={getStatusColor(tool.status)}>
                     {tool.status}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm" onClick={(e) => handleEditClick(e, tool)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+                  {hoveredRow === tool.id && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => handleEditClick(e, tool)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -353,9 +483,14 @@ export default function ToolingCostPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 space-y-4 overflow-hidden flex flex-col">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label className="text-sm text-muted-foreground">Current Projected Cost</Label>
+                <Label className="text-sm text-muted-foreground">Supplier & Site</Label>
+                <p className="text-lg font-semibold">{selectedTool?.supplier}</p>
+                <p className="text-sm text-muted-foreground">{selectedTool?.site}</p>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">Current Should Cost</Label>
                 <p className="text-2xl font-bold">${selectedTool?.projectedCost.toLocaleString()}</p>
               </div>
               <div>
@@ -404,7 +539,7 @@ export default function ToolingCostPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="projectedCost">Projected Cost</Label>
+              <Label htmlFor="projectedCost">Should Cost</Label>
               <Input
                 id="projectedCost"
                 type="number"

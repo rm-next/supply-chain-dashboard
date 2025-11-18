@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Package, TrendingUp, Truck, ShieldCheck, RotateCcw, Factory, Zap } from "lucide-react"
+import { Package, TrendingUp, Truck, ShieldCheck, RotateCcw, Factory, Zap } from 'lucide-react'
 
 export default function LandingPage() {
   const agents = [
@@ -76,7 +76,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild className="text-base">
-              <Link href="/signup">
+              <Link href="/login">
                 Start Your Transformation
                 <span className="ml-2">→</span>
               </Link>
@@ -373,7 +373,7 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto space-y-12">
             <div className="text-center space-y-4">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                Logical Building Blocks to Enable the Vision
+                Logical Building Blocks to enable Agentic Supply Chain
               </h2>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
                 A layered architecture that transforms organizational knowledge and data into autonomous decision-making
@@ -381,32 +381,53 @@ export default function LandingPage() {
             </div>
 
             <div className="space-y-4">
-              {[
-                {
-                  title: "Agentic UX – For cross-cutting systems workflows, App Specific UX with Embedded AI",
-                  label: "UI",
-                },
-                { title: "Agent1, Agent2 ... Agent N + Workflows", label: "Agent Builder" },
-                { title: "Supply Chain Network / Transactions Ontology – Data Context", label: "Data Context" },
-                { title: "MCP Enabled", label: "Data Access" },
-              ].map((layer, idx) => (
-                <div key={layer.label} className="flex items-stretch gap-4">
-                  <div className="flex-1 bg-gradient-to-r from-primary to-orange-600 text-white rounded-xl p-6 shadow-lg">
-                    <div className="font-semibold text-lg">{layer.title}</div>
-                  </div>
-                  <div className="w-36 flex items-center justify-center bg-white dark:bg-slate-900 rounded-xl px-4 shadow-lg">
-                    <span className="font-bold text-muted-foreground text-sm">{layer.label}</span>
-                  </div>
+              {/* Ops Advisor Agentic UX */}
+              <div className="flex items-stretch gap-4 group">
+                <div className="flex-1 bg-gradient-to-r from-primary to-orange-600 text-white rounded-xl p-6 shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
+                  <div className="font-semibold text-lg">Ops Advisor Agentic UX</div>
                 </div>
-              ))}
+                <div className="w-36 flex items-center justify-center bg-white dark:bg-slate-900 rounded-xl px-4 shadow-lg">
+                  <span className="font-bold text-muted-foreground text-sm">UI</span>
+                </div>
+              </div>
+              
+              {/* Agent1, Agent2 ... Agent N + Workflows */}
+              <div className="flex items-stretch gap-4 group">
+                <div className="flex-1 bg-gradient-to-r from-primary to-orange-600 text-white rounded-xl p-6 shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
+                  <div className="font-semibold text-lg">Agent1, Agent2 ... Agent N + Workflows</div>
+                </div>
+                <div className="w-36 flex items-center justify-center bg-white dark:bg-slate-900 rounded-xl px-4 shadow-lg">
+                  <span className="font-bold text-muted-foreground text-sm">Agent Builder</span>
+                </div>
+              </div>
+              
+              {/* Supply Chain Network / Transactions Ontology – Data Context */}
+              <div className="flex items-stretch gap-4 group">
+                <div className="flex-1 bg-gradient-to-r from-primary to-orange-600 text-white rounded-xl p-6 shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
+                  <div className="font-semibold text-lg">Supply Chain Network / Transactions Ontology – Data Context</div>
+                </div>
+                <div className="w-36 flex items-center justify-center bg-white dark:bg-slate-900 rounded-xl px-4 shadow-lg">
+                  <span className="font-bold text-muted-foreground text-sm">Data Context</span>
+                </div>
+              </div>
+              
+              {/* MCP enabled Data Discovery */}
+              <div className="flex items-stretch gap-4 group">
+                <div className="flex-1 bg-gradient-to-r from-primary to-orange-600 text-white rounded-xl p-6 shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
+                  <div className="font-semibold text-lg">MCP enabled Data Discovery</div>
+                </div>
+                <div className="w-36 flex items-center justify-center bg-white dark:bg-slate-900 rounded-xl px-4 shadow-lg">
+                  <span className="font-bold text-muted-foreground text-sm">Data Access</span>
+                </div>
+              </div>
 
               {/* Data Sources */}
               <div className="flex items-stretch gap-4">
-                <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="flex-1 flex gap-3">
                   {["PLM", "Costing", "Supplier Mgmt", "Inventory", "Spreadsheets", "Web"].map((source) => (
                     <div
                       key={source}
-                      className="bg-gradient-to-br from-orange-700 to-orange-800 text-white rounded-lg p-4 text-center shadow-lg"
+                      className="flex-1 bg-gradient-to-br from-orange-700 to-orange-800 text-white rounded-lg p-4 text-center shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
                     >
                       <div className="text-sm font-medium">{source}</div>
                     </div>
@@ -426,45 +447,10 @@ export default function LandingPage() {
                 opportunities into domains as combinations of agents, knowledge, and tools for automation.
               </p>
               <div className="bg-primary text-primary-foreground rounded-lg p-6 text-center">
-                <div className="text-3xl font-bold mb-1">Months → Days</div>
-                <div>From planning to execution, dramatically accelerated</div>
+                <div className="text-3xl font-bold mb-1">Days → Minutes</div>
+                <div className="text-base">Unlocking insights, mitigating risks and lowering costs</div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Agents Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Six Specialized Agents, One Unified Platform
-            </h2>
-            <p className="text-lg text-muted-foreground text-balance leading-relaxed">
-              Each agent brings deep domain expertise and autonomous decision-making capabilities, working together to
-              optimize your entire supply chain ecosystem.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-            {agents.map((agent) => {
-              const Icon = agent.icon
-              return (
-                <div
-                  key={agent.title}
-                  className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-shadow"
-                >
-                  <div className="mb-4">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
-                      <Icon className="h-6 w-6 text-primary" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-semibold text-card-foreground mb-3">{agent.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{agent.description}</p>
-                </div>
-              )
-            })}
           </div>
         </div>
       </section>
@@ -508,7 +494,7 @@ export default function LandingPage() {
             Join leading OEMs, contract manufacturers, and suppliers who trust Ops Advisor to power their operations.
           </p>
           <Button size="lg" variant="secondary" asChild className="text-base">
-            <Link href="/signup">
+            <Link href="/login">
               Get Started Today
               <span className="ml-2">→</span>
             </Link>

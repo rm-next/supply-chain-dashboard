@@ -32,27 +32,14 @@ import {
   type ColumnFiltersState,
   type VisibilityState,
 } from "@tanstack/react-table"
-import {
-  Sparkles,
-  ArrowUpDown,
-  Search,
-  Filter,
-  Settings2,
-  X,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Pencil,
-  Plus,
-  Info,
-  Check,
-  Loader2,
-} from "lucide-react"
+import { Sparkles, ArrowUpDown, Search, Filter, Settings2, X, CheckCircle2, Clock, AlertCircle, Pencil, Plus, Info, Check, Loader2 } from 'lucide-react'
 
 interface Program {
   id: string
   name: string
   productFamily: string
+  technology?: string // Added technology field
+  asins?: { asin: string; countries: string[] }[] // Added ASINs list with countries
   productTier: "Signature" | "Core" | "Entry"
   phase: string
   engagementModel: "High" | "Medium" | "Low" | "Ultra Light" | "ODM"
@@ -77,6 +64,69 @@ interface SupplierCommodity {
 
 const programs: Program[] = [
   {
+    id: "PRG-008",
+    name: "Fire SMP Horizon", // Renamed from Echo Horizon to Fire SMP Horizon
+    productFamily: "Streaming Media Devices",
+    technology: "4K HDR Streaming, WiFi 6, Dolby Atmos", // Added technology field
+    asins: [ // Added ASINs with countries
+      { asin: "B0CFQR5T8Y-US", countries: ["US", "CA", "MX"] },
+      { asin: "B0CFQR5T8Y-EU", countries: ["UK", "DE", "FR", "IT", "ES"] },
+      { asin: "B0CFQR5T8Y-JP", countries: ["JP"] },
+      { asin: "B0CFQR5T8Y-AU", countries: ["AU", "NZ"] },
+    ],
+    productTier: "Core",
+    phase: "Product Assessment",
+    engagementModel: "High",
+    asinCount: 8,
+    ltv: "$2.8M",
+    completion: 15,
+    milestones: [
+      { name: "Working Backward", status: "completed", date: "2025-09-15" },
+      { name: "Product Assessment", status: "in-progress", date: "2025-11-20" },
+      { name: "BRD", status: "pending", date: "2026-01-10" },
+      { name: "Dev Commit", status: "pending", date: "2026-02-01" },
+      { name: "HVT", status: "pending", date: "2026-03-15" },
+      { name: "EVT", status: "pending", date: "2026-04-20" },
+      { name: "DVT", status: "pending", date: "2026-05-25" },
+      { name: "PVT", status: "pending", date: "2026-07-01" },
+      { name: "Ok2Ship", status: "pending", date: "2026-08-01" },
+    ],
+    supplierPOR: "To Be Determined",
+    tasks: [
+      { name: "Supplier SPOR Creation", assignee: "Material Program Mgr", status: "pending" },
+      { name: "Technical Feasibility Study", assignee: "EE Lead", status: "in-progress" },
+      { name: "Cost Model Development", assignee: "Cost Engineer", status: "pending" },
+      { name: "Market Requirements", assignee: "Product Manager", status: "in-progress" },
+    ],
+    team: [
+      {
+        name: "Sarah Chen",
+        role: "Material Program Mgr",
+        responsibility: "Lead supplier qualification and SPOR development for all components",
+      },
+      {
+        name: "Michael Rodriguez",
+        role: "EE Lead",
+        responsibility: "Define technical requirements and validate supplier capabilities",
+      },
+      {
+        name: "Jennifer Liu",
+        role: "Cost Engineer",
+        responsibility: "Develop should-cost models and negotiate pricing with suppliers",
+      },
+      {
+        name: "David Kim",
+        role: "Product Manager",
+        responsibility: "Define market requirements and product positioning",
+      },
+      {
+        name: "Emily Watson",
+        role: "Quality Engineer",
+        responsibility: "Establish quality standards and testing procedures",
+      },
+    ],
+  },
+  {
     id: "PRG-001",
     name: "Echo Show 15",
     productFamily: "Smart Home Audio",
@@ -90,7 +140,7 @@ const programs: Program[] = [
       { name: "Product Assessment", status: "completed", date: "2023-06-15" },
       { name: "BRD", status: "completed", date: "2023-08-01" },
       { name: "EVT", status: "completed", date: "2023-11-15" },
-      { name: "DVT", status: "completed", date: "2024-02-01" },
+      { name: "DVT", status: "completed", date: "2023-02-01" },
       { name: "PVT", status: "completed", date: "2024-04-15" },
       { name: "Mass Production", status: "in-progress", date: "2024-06-01" },
     ],
@@ -872,10 +922,28 @@ export default function ProgramPage() {
   const [recommendationStep, setRecommendationStep] = useState(0)
   const [editingRow, setEditingRow] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<Partial<SupplierCommodity>>({})
+  const [showExplainability, setShowExplainability] = useState(false) // Added state for explainability popover
 
   useEffect(() => {
     const event = new CustomEvent("setModuleName", { detail: { moduleName: "Programs" } })
     window.dispatchEvent(event)
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const programId = params.get("program")
+    const tab = params.get("tab")
+
+    if (programId) {
+      const program = programs.find(p => p.id === programId)
+      if (program) {
+        setSelectedProgram(program)
+        setIsModalOpen(true)
+        if (tab) {
+          setActiveTab(tab as any)
+        }
+      }
+    }
   }, [])
 
   const columns = useMemo<ColumnDef<Program>[]>(
@@ -1624,7 +1692,7 @@ export default function ProgramPage() {
                         : "border-transparent text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    Supplier-Commodity Plan
+                    SPOR (Supplier Commodity Plan)
                   </button>
                   <button
                     onClick={() => setActiveTab("team")}
@@ -1642,7 +1710,7 @@ export default function ProgramPage() {
               <div className="flex-1 overflow-y-auto p-6">
                 {activeTab === "overview" && (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <Card>
                         <CardHeader className="pb-3">
                           <CardTitle className="text-sm font-medium text-muted-foreground">Product Family</CardTitle>
@@ -1652,26 +1720,52 @@ export default function ProgramPage() {
                         </CardContent>
                       </Card>
 
+                      {selectedProgram.technology && (
+                        <Card>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Technology</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm">{selectedProgram.technology}</p>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+
+                    {selectedProgram.asins && selectedProgram.asins.length > 0 && (
                       <Card>
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-medium text-muted-foreground">Number of ASINs</CardTitle>
+                          <CardTitle className="text-sm font-medium text-muted-foreground">ASINs by Region</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-lg font-semibold">{selectedProgram.asinCount}</p>
+                          <div className="space-y-3">
+                            {selectedProgram.asins.map((asinData, index) => (
+                              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                                <span className="font-mono font-medium">{asinData.asin}</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {asinData.countries.map((country) => (
+                                    <Badge key={country} variant="outline">
+                                      {country}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </CardContent>
                       </Card>
+                    )}
 
+                    <div className="grid grid-cols-3 gap-4">
                       <Card>
                         <CardHeader className="pb-3">
                           <CardTitle className="text-sm font-medium text-muted-foreground">LTV</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-lg font-semibold">{selectedProgram.ltv}</p>
+                          <p className="text-2xl font-bold text-primary">{selectedProgram.ltv}</p>
                         </CardContent>
                       </Card>
-                    </div>
 
-                    <div className="grid grid-cols-3 gap-4">
                       <Card>
                         <CardHeader className="pb-3">
                           <CardTitle className="text-sm font-medium text-muted-foreground">Product Tier</CardTitle>
@@ -1697,6 +1791,17 @@ export default function ProgramPage() {
                         </CardHeader>
                         <CardContent>
                           <p className="text-lg font-semibold">{selectedProgram.phase}</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-medium text-muted-foreground">Number of ASINs</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-lg font-semibold">{selectedProgram.asinCount}</p>
                         </CardContent>
                       </Card>
 
@@ -1777,7 +1882,83 @@ export default function ProgramPage() {
                   <Card>
                     <CardHeader>
                       <div className="flex items-center justify-between">
-                        <CardTitle>Supplier-Commodity Plan</CardTitle>
+                        {supplierCommodities.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <CardTitle>Supplier-Commodity Plan</CardTitle>
+                            <Popover open={showExplainability} onOpenChange={setShowExplainability}>
+                              <PopoverTrigger asChild>
+                                <button
+                                  className="p-1 rounded-full hover:bg-accent transition-colors"
+                                  aria-label="Show explainability"
+                                >
+                                  <Info className="h-4 w-4 text-muted-foreground" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[400px]" align="start">
+                                <div className="space-y-4">
+                                  <div>
+                                    <h4 className="font-semibold text-sm mb-2">How Recommendations Were Generated</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                      Our AI analyzed similar product programs and supplier performance data to generate these
+                                      recommendations.
+                                    </p>
+                                  </div>
+
+                                  <div className="space-y-3">
+                                    <div className="border-l-2 border-primary pl-3">
+                                      <h5 className="font-medium text-sm mb-1">Commodity Selection</h5>
+                                      <p className="text-xs text-muted-foreground">
+                                        Analyzed similar programs including Fire TV Stick 4K, Echo Show 15, and Ring Video
+                                        Doorbell Pro 2 to identify critical commodities for streaming media players like{" "}
+                                        {selectedProgram?.name}. Key components identified: display panels, WiFi 6 modules,
+                                        HDMI 2.1 controllers, and premium audio components.
+                                      </p>
+                                    </div>
+
+                                    <div className="border-l-2 border-blue-500 pl-3">
+                                      <h5 className="font-medium text-sm mb-1">Supplier Selection Criteria</h5>
+                                      <div className="space-y-2 text-xs text-muted-foreground">
+                                        <div className="flex justify-between">
+                                          <span className="font-medium">Delivery Performance:</span>
+                                          <span>95-99% on-time delivery rate</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="font-medium">Cost Competitiveness:</span>
+                                          <span>15-20% below market average</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="font-medium">Technical Specs:</span>
+                                          <span>4K HDR, WiFi 6, Dolby Atmos</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="font-medium">Quality Rating:</span>
+                                          <span>94-98% first-pass yield</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="border-l-2 border-green-500 pl-3">
+                                      <h5 className="font-medium text-sm mb-1">Risk Assessment</h5>
+                                      <p className="text-xs text-muted-foreground">
+                                        Evaluated geopolitical risks, capacity constraints, and supply chain disruption
+                                        probability. Recommended dual-sourcing for critical components and EMS management for
+                                        commoditized parts.
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="pt-2 border-t">
+                                    <p className="text-xs text-muted-foreground italic">
+                                      These recommendations are based on historical data from 50+ similar programs. Review and
+                                      modify based on your expertise and current market conditions.
+                                    </p>
+                                  </div>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                            {/* </CHANGE> */}
+                          </div>
+                        )}
                         {supplierCommodities.length > 0 && (
                           <div className="flex gap-2">
                             {!supplierCommodities.every((item) => item.accepted) && (
@@ -1822,7 +2003,7 @@ export default function ProgramPage() {
                       {!isRecommending && supplierCommodities.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12 space-y-4">
                           <p className="text-muted-foreground">
-                            No supplier-commodity plan yet. Click "Recommend" to generate recommendations.
+                            Click Recommend to generate Supplier commodity plan
                           </p>
                           <Button onClick={handleRecommend} className="gap-2">
                             <Sparkles className="h-4 w-4" />
