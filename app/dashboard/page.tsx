@@ -30,9 +30,11 @@ export default function DashboardPage() {
     
     updateCounts()
     
-    const handleStorageChange = () => updateCounts()
-    window.addEventListener("storage", handleStorageChange)
-    return () => window.removeEventListener("storage", handleStorageChange)
+    if (typeof window !== 'undefined') {
+      const handleStorageChange = () => updateCounts()
+      window.addEventListener("storage", handleStorageChange)
+      return () => window.removeEventListener("storage", handleStorageChange)
+    }
   }, [])
 
   return (
